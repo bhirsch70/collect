@@ -1,2 +1,13 @@
 ---
 -name: My collection playbook
+
+- name: Get SSH key from system log.
+      shell: aws ec2 get-console-output \
+               --region {{ region }} \
+               --instance-id {{ item.id }} \
+               --output text | sed -n 's/^.*\(ecdsa-sha2-nistp256 \)\(.*\)/\2/p' | tail -n 1 | awk '{print $1}' | awk '{print substr($0,1,140)}'
+      register: host_key_info
+      with_items: "{{ ec2_remote_facts.instances }}"
+      when: item.tags.Name is defined and wipe is not defined
+      
+      
